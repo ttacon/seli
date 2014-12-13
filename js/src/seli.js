@@ -1,6 +1,6 @@
 /**
  *
- * selie.js - Lightly wrapping native js functionality.
+ * seli.js - Lightly wrapping native js functionality.
  *
  * Copyright (c) 2014 Trey Tacon (ttacon@gmail.com)
  * Licensed under the MIT License (see LICENSE file).
@@ -34,50 +34,52 @@
 
 	// we need to consider a node cache, for equality (i.e. we don't
 	// wrap the same DOM node more than once, which we currently do do)
-	var SelieEle = function(el) {
+	var SeliEle = function(el) {
 		this.el = el;
 	};
 
-	SelieEle.prototype = {
+	SeliEle.prototype = {
 		addClass: function(c) {
-			// TODO(ttacon): do it
+			if (this.el.classList) {
+				this.el.classList.add(clz);
+				return;
+			}
+			this.el.className += ' ' + clz;
 		},
 		after: function(htmlString) {
-			// TODO(ttacon): do it
+			this.el.insertAdjacentHTML('afterend', htmlString);
 		},
-		append: function(el) {
-			// TODO(ttacon): do it
+	    append: function(el) {
+			this.el.parentNode.appendChild(el);
 		},
 		before: function(htmlString) {
-			// TODO(ttacon): do it
+			this.el.insertAdjacentHTML('beforebegin', htmlString);
 		},
 		children: function() {
-			// TODO(ttacon): do it
 			var ra = this.el.children, vals = [];
-
 			// wrap them as $eles
 			for (var i=0; i < ra.length; i++) {
-				vals.push(new SelieEle(ra[i]));
+				vals.push(new SeliEle(ra[i]));
 			}
 			return vals;
 		},
 		clone: function() {
-			// TODO(ttacon): do it
+			return new SeliEle(this.el.cloneNode(true));
+		},
+		cloneElement: function() {
+			return this.el.cloneNode(true);
 		},
 		contains: function(child) {
-			// TODO(ttacon): do it
-		},
-		each: function(func) {
-			// TODO(ttacon): do it
+			return this.el !== child && this.el.contains(child);
 		},
 		empty: function() {
-			// TODO(ttacon): do it
+			return this.el.innerHTML = '';
 		},
-		filter: function(filterFn) {
-			// TODO(ttacon): do it
+		isEmpty: function() {
+			return this.el.innerHTML === '';
 		},
 		find: function(sel) {
-			// TODO(ttacon): do it
+			return this.el.querySelectorAll(sel);
 		},
 		attr: function(attr, val) {
 			if (val) {
@@ -107,7 +109,10 @@
 			return this.el.textContent;
 		},
 		hasClass: function(clz) {
-
+			if (el.classList) {
+				return el.classList.contains(className);
+			}
+			return new RegExp('(^| )' + className + '( |$)', 'gi').test(el.className);
 		},
 		is: function(ele) {
 			return this.el === ele;
@@ -145,7 +150,7 @@
 			return width;
 		},
 		parent: function() {
-			return new SelieEle(this.el.parentNode);
+			return new SeliEle(this.el.parentNode);
 		},
 		position: function(relToViewport) {
 			if (relToViewport) {
@@ -157,7 +162,7 @@
 			};
 		},
 		prepend: function(el) {
-			// should check if this is SelieEle or not
+			// should check if this is SeliEle or not
 			return this.el.parentNode.insertBefore(el, this.el.parentNode.firstChild);
 		},
 		prev: function() {
@@ -180,11 +185,27 @@
 			return this.el.outerHTML = htmlString;
 		},
 		siblings: function() {
-			// TODO(ttacon): do it
+			var $this = this.el;
+			return Array.prototype.filter.call($this.parentNode.children, function(child){
+					return child !== $this;
+				});
 		},
 		toggleClass: function(clz) {
-			// TODO(ttacon): do it
+			if (el.classList) {
+				el.classList.toggle(className);
+				return;
+			}
+
+			var classes = el.className.split(' ');
+			var existingIndex = classes.indexOf(className);
+			if (existingIndex >= 0) {
+				classes.splice(existingIndex, 1);
+			} else {
+				classes.push(className);
+			}
+			el.className = classes.join(' ');
 		},
+
 		// events
 		on: function(evnt, evntLstnr) {
 			return this.el.addEventListener(evnt, evntLstnr);
@@ -214,8 +235,6 @@
 			   ).call(el, selector);
 	};
 
-
-	// a couple useful helpers
 	var extend = function(e0, e1) {
 		for (var prop in e1) {
 			if (!(e0[prop])){
@@ -236,22 +255,25 @@
 	var $s = {
 		find: function(sel, cntxt) {
 			// for now not supporting context
-
-			// for now we need to hide some attrs
 			var el = document.querySelector(sel);
-			return new SelieEle(el);
+			return new SeliEle(el);
 		},
 		create: function(ele) {
 			
 		},
 		contains: function(el, child) {
-
+			
 		},
 		ready: function(fn) {
 			document.addEventListener('DOMContentLoaded', fn());
+		},
+		merge: function(e0, e1) {
+			return merge(e0, e1);
+		},
+		extend: function(e0, e1) {
+			return extend(e0, e1);
 		}
 	};
-
 	window.$s = $s;
 
 })(window, document);
