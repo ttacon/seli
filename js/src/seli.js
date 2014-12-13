@@ -256,13 +256,14 @@
 		find: function(sel, cntxt) {
 			// for now not supporting context
 			var el = document.querySelector(sel);
+			// make this actually work as expected, instead of only for a single element
 			return new SeliEle(el);
 		},
 		create: function(ele) {
-			
+			// TODO(ttacon): do it
 		},
 		contains: function(el, child) {
-			
+			// TODO(ttacon): do it
 		},
 		ready: function(fn) {
 			document.addEventListener('DOMContentLoaded', fn());
